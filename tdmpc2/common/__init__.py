@@ -57,4 +57,15 @@ TASK_SET = {
 		'mw-stick-pull', 'mw-sweep-into', 'mw-sweep', 'mw-window-open', 'mw-window-close',
 		'mw-bin-picking', 'mw-box-close', 'mw-door-lock', 'mw-door-unlock', 'mw-hand-insert',
 	],
+	'humanoid9': [
+		'h1-walk-v0',
+        'h1-stand-v0',
+        'h1-run-v0',
+        'h1-stair-v0',
+        'h1-crawl-v0',
+        'h1-pole-v0',
+        'h1-slide-v0',
+        'h1-hurdle-v0',
+        'h1-maze-v0',
+	],
 }
