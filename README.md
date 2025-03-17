@@ -1,160 +1,237 @@
-<h1>TD-MPC2</span></h1>
+# HumanoidBench: Simulated Humanoid Benchmark for Whole-Body Locomotion and Manipulation
 
-Official implementation of
+[Paper](https://arxiv.org/abs/2403.10506) [Website](https://sferrazza.cc/humanoidbench_site/)
 
-[TD-MPC2: Scalable, Robust World Models for Continuous Control](https://www.tdmpc2.com) by
+We present [HumanoidBench](https://sferrazza.cc/humanoidbench_site/), a simulated humanoid robot benchmark consisting of $15$ whole-body manipulation and $12$ locomotion tasks. This repo contains the code for environments and training.
 
-[Nicklas Hansen](https://nicklashansen.github.io), [Hao Su](https://cseweb.ucsd.edu/~haosu)\*, [Xiaolong Wang](https://xiaolonw.github.io)\* (UC San Diego)</br>
+![image](humanoid_bench.jpg)
 
-<img src="assets/0.gif" width="12.5%"><img src="assets/1.gif" width="12.5%"><img src="assets/2.gif" width="12.5%"><img src="assets/3.gif" width="12.5%"><img src="assets/4.gif" width="12.5%"><img src="assets/5.gif" width="12.5%"><img src="assets/6.gif" width="12.5%"><img src="assets/7.gif" width="12.5%"></br>
+## Directories
+Structure of the repository:
+* `data`: Weights of the low-level skill policies
+* `dreamerv3`: Training code for dreamerv3
+* `humanoid_bench`: Core benchmark code
+    * `assets`: Simulation assets
+    * `envs`: Environment files
+    * `mjx`: MuJoCo MJX training code
+* `jaxrl_m`: Training code for SAC
+* `ppo`: Training code for PPO
+* `tdmpc2`: Training code for TD-MPC2
 
-[[Website]](https://www.tdmpc2.com) [[Paper]](https://arxiv.org/abs/2310.16828) [[Models]](https://www.tdmpc2.com/models)  [[Dataset]](https://www.tdmpc2.com/dataset)
-
-----
-
-**Announcement: training just got ~4.5x faster!**
-
-Expect **~4.5x** faster wall-time (depending on hardware and task) with the most recent release (Nov 10, 2024). A majority of the speedups in this branch are enabled with the additional flag `compile=true`. To run the code with `compile=true`, **you will need to install recent `nightly` versions of PyTorch, TensorDict, and TorchRL**. See `docker/environment.yaml` for a tested configuration. Thank you to [Vincent Moens](https://github.com/vmoens) who has been a key contributor to our torch.compile compatibility!
-
-----
-
-
-## Overview
-
-TD-MPC**2** is a scalable, robust model-based reinforcement learning algorithm. It compares favorably to existing model-free and model-based methods across **104** continuous control tasks spanning multiple domains, with a *single* set of hyperparameters (*right*). We further demonstrate the scalability of TD-MPC**2** by training a single 317M parameter agent to perform **80** tasks across multiple domains, embodiments, and action spaces (*left*). 
-
-<img src="assets/8.png" width="100%" style="max-width: 640px"><br/>
-
-This repository contains code for training and evaluating both single-task online RL and multi-task offline RL TD-MPC**2** agents. We additionally open-source **300+** [model checkpoints](https://www.tdmpc2.com/models) (including 12 multi-task models) across 4 task domains: [DMControl](https://arxiv.org/abs/1801.00690), [Meta-World](https://meta-world.github.io/), [ManiSkill2](https://maniskill2.github.io/), and [MyoSuite](https://sites.google.com/view/myosuite), as well as our [30-task and 80-task datasets](https://www.tdmpc2.com/dataset) used to train the multi-task models. Our codebase supports both state and pixel observations. We hope that this repository will serve as a useful community resource for future research on model-based RL.
-
-----
-
-## Getting started
-
-You will need a machine with a GPU and at least 12 GB of RAM for single-task online RL with TD-MPC**2**, and 128 GB of RAM for multi-task offline RL on our provided 80-task dataset. A GPU with at least 8 GB of memory is recommended for single-task online RL and for evaluation of the provided multi-task models (up to 317M parameters). Training of the 317M parameter model requires a GPU with at least 24 GB of memory.
-
-We provide a `Dockerfile` for easy installation. You can build the docker image by running
-
+## Installation
+Create a clean conda environment:
 ```
-cd docker && docker build . -t <user>/tdmpc2:1.0.0
+conda create -n humanoidbench python=3.11
+conda activate humanoidbench
 ```
-
-This docker image contains all dependencies needed for running DMControl, Meta-World, and ManiSkill2 experiments.
-
-If you prefer to install dependencies manually, start by installing dependencies via `conda` by running the following command:
-
+Then, install the required packages:
 ```
-conda env create -f docker/environment.yaml
-pip install gym==0.21.0
+# Install HumanoidBench
+pip install -e .
+
+# jax GPU version
+pip install "jax[cuda12]==0.4.28"
+# Or, jax CPU version
+pip install "jax[cpu]==0.4.28"
+
+# Install jaxrl
+pip install -r requirements_jaxrl.txt
+
+# Install dreamer
+pip install -r requirements_dreamer.txt
+
+# Install td-mpc2
+pip install -r requirements_tdmpc.txt
 ```
 
-The `environment.yaml` file installs dependencies required for training on DMControl tasks. Other domains can be installed by following the instructions in `environment.yaml`.
 
-If you want to run ManiSkill2, you will additionally need to download and link the necessary assets by running
+## Environments
 
+### Main Benchmark Tasks
+* `h1hand-walk-v0`
+* `h1hand-reach-v0`
+* `h1hand-hurdle-v0`
+* `h1hand-crawl-v0`
+* `h1hand-maze-v0`
+* `h1hand-push-v0`
+* `h1hand-cabinet-v0`
+* `h1strong-highbar_hard-v0`  # Make hands stronger to be able to hang from the high bar
+* `h1hand-door-v0`
+* `h1hand-truck-v0`
+* `h1hand-cube-v0`
+* `h1hand-bookshelf_simple-v0`
+* `h1hand-bookshelf_hard-v0`
+* `h1hand-basketball-v0`
+* `h1hand-window-v0`
+* `h1hand-spoon-v0`
+* `h1hand-kitchen-v0`
+* `h1hand-package-v0`
+* `h1hand-powerlift-v0`
+* `h1hand-room-v0`
+* `h1hand-stand-v0`
+* `h1hand-run-v0`
+* `h1hand-sit_simple-v0`
+* `h1hand-sit_hard-v0`
+* `h1hand-balance_simple-v0`
+* `h1hand-balance_hard-v0`
+* `h1hand-stair-v0`
+* `h1hand-slide-v0`
+* `h1hand-pole-v0`
+* `h1hand-insert_normal-v0`
+* `h1hand-insert_small-v0`
+
+### Test Environments with Random Actions
 ```
-python -m mani_skill2.utils.download_asset all
-```
-
-which downloads assets to `./data`. You may move these assets to any location. Then, add the following line to your `~/.bashrc`:
-
-```
-export MS2_ASSET_DIR=<path>/<to>/<data>
-```
-
-and restart your terminal. Meta-World additionally requires MuJoCo 2.1.0. We host the unrestricted MuJoCo 2.1.0 license (courtesy of Google DeepMind) at [https://www.tdmpc2.com/files/mjkey.txt](https://www.tdmpc2.com/files/mjkey.txt). You can download the license by running
-
-```
-wget https://www.tdmpc2.com/files/mjkey.txt -O ~/.mujoco/mjkey.txt
-```
-
-See `docker/Dockerfile` for installation instructions if you do not already have MuJoCo 2.1.0 installed. MyoSuite requires `gym==0.13.0` which is incompatible with Meta-World and ManiSkill2. Install separately with `pip install myosuite` if desired. Depending on your existing system packages, you may need to install other dependencies. See `docker/Dockerfile` for a list of recommended system packages.
-
-----
-
-## Supported tasks
-
-This codebase currently supports **104** continuous control tasks from **DMControl**, **Meta-World**, **ManiSkill2**, and **MyoSuite**. Specifically, it supports 39 tasks from DMControl (including 11 custom tasks), 50 tasks from Meta-World, 5 tasks from ManiSkill2, and 10 tasks from MyoSuite, and covers all tasks used in the paper. See below table for expected name formatting for each task domain:
-
-| domain | task
-| --- | --- |
-| dmcontrol | dog-run
-| dmcontrol | cheetah-run-backwards
-| metaworld | mw-assembly
-| metaworld | mw-pick-place-wall
-| maniskill | pick-cube
-| maniskill | pick-ycb
-| myosuite  | myo-key-turn
-| myosuite  | myo-key-turn-hard
-
-which can be run by specifying the `task` argument for `evaluation.py`. Multi-task training and evaluation is specified by setting `task=mt80` or `task=mt30` for the 80-task and 30-task sets, respectively.
-
-**As of Dec 27, 2023 the TD-MPC2 codebase also supports pixel observations for DMControl tasks**; use argument `obs=rgb` if you wish to train visual policies.
-
-
-## Example usage
-
-We provide examples on how to evaluate our provided TD-MPC**2** checkpoints, as well as how to train your own TD-MPC**2** agents, below.
-
-### Evaluation
-
-See below examples on how to evaluate downloaded single-task and multi-task checkpoints.
-
-```
-$ python evaluate.py task=mt80 model_size=48 checkpoint=/path/to/mt80-48M.pt
-$ python evaluate.py task=mt30 model_size=317 checkpoint=/path/to/mt30-317M.pt
-$ python evaluate.py task=dog-run checkpoint=/path/to/dog-1.pt save_video=true
+python -m humanoid_bench.test_env --env h1hand-walk-v0
 ```
 
-All single-task checkpoints expect `model_size=5`. Multi-task checkpoints are available in multiple model sizes. Available arguments are `model_size={1, 5, 19, 48, 317}`. Note that single-task evaluation of multi-task checkpoints is currently not supported. See `config.yaml` for a full list of arguments.
-
-### Training
-
-See below examples on how to train TD-MPC**2** on a single task (online RL) and on multi-task datasets (offline RL). We recommend configuring [Weights and Biases](https://wandb.ai) (`wandb`) in `config.yaml` to track training progress.
-
+### Test Environments with Hierarchical Policy and Random Actions
 ```
-$ python train.py task=mt80 model_size=48 batch_size=1024
-$ python train.py task=mt30 model_size=317 batch_size=1024
-$ python train.py task=dog-run steps=7000000
-$ python train.py task=walker-walk obs=rgb
+# Define checkpoints to pre-trained low-level policy and obs normalization
+export POLICY_PATH="data/reach_two_hands/torch_model.pt"
+export MEAN_PATH="data/reach_two_hands/mean.npy"
+export VAR_PATH="data/reach_two_hands/var.npy"
+
+# Test the environment
+python -m humanoid_bench.test_env --env h1hand-push-v0 --policy_path ${POLICY_PATH} --mean_path ${MEAN_PATH} --var_path ${VAR_PATH} --policy_type "reach_double_relative"
 ```
 
-We recommend using default hyperparameters for single-task online RL, including the default model size of 5M parameters (`model_size=5`). Multi-task offline RL benefits from a larger model size, but larger models are also increasingly costly to train and evaluate. Available arguments are `model_size={1, 5, 19, 48, 317}`. See `config.yaml` for a full list of arguments.
+### Test Low-Level Reaching Policy (trained with MJX, testing on classical MuJoCo)
+```
+# One-hand reaching
+python -m humanoid_bench.mjx.mjx_test --with_full_model 
 
-**As of Jan 7, 2024 the TD-MPC2 codebase also supports multi-GPU training for multi-task offline RL experiments**; use branch `distributed` and argument `world_size=N` to train on `N` GPUs. We cannot guarantee that distributed training will yield the same results, but they appear to be similar based on our limited testing.
+# Two-hand reaching
+python -m humanoid_bench.mjx.mjx_test --with_full_model --task=reach_two_hands --folder=./data/reach_two_hands
+```
 
-----
+### Change Observations
+As a default, the environment returns a privileged state of the environment (e.g., robot state + environment state). To get proprio, visual, and tactile sensing, set `obs_wrapper=True` and accordingly select the required sensors, e.g. `sensors="proprio,image,tactile"`. When using tactile sensing, make sure to use `h1touch` in place of `h1hand`.
+Full test instruction:
+```
+python -m humanoid_bench.test_env --env h1touch-stand-v0 --obs_wrapper True --sensors "proprio,image,tactile"
+```
+
+### Other Environments
+In addition to the main benchmark tasks listed above, you can run the following environements that feature the robot without hands:
+* `h1-walk-v0`
+* `h1-reach-v0`
+* `h1-hurdle-v0`
+* `h1-crawl-v0`
+* `h1-maze-v0`
+* `h1-push-v0`
+* `h1-highbar_simple-v0`
+* `h1-door-v0`
+* `h1-truck-v0`
+* `h1-basketball-v0`
+* `h1-package-v0`
+* `h1-stand-v0`
+* `h1-run-v0`
+* `h1-sit_simple-v0`
+* `h1-sit_hard-v0`
+* `h1-balance_simple-v0`
+* `h1-balance_hard-v0`
+* `h1-stair-v0`
+* `h1-slide-v0`
+* `h1-pole-v0`
+
+The robot with low-dimensional hands:
+* `h1simplehand-pole-v0`
+
+And the Unitree G1 robot with three-finger hands:
+* `g1-walk-v0`
+* `g1-reach-v0`
+* `g1-hurdle-v0`
+* `g1-crawl-v0`
+* `g1-maze-v0`
+* `g1-push-v0`
+* `g1-cabinet-v0`
+* `g1-door-v0`
+* `g1-truck-v0`
+* `g1-cube-v0`
+* `g1-bookshelf_simple-v0`
+* `g1-bookshelf_hard-v0`
+* `g1-basketball-v0`
+* `g1-window-v0`
+* `g1-spoon-v0`
+* `g1-kitchen-v0`
+* `g1-package-v0`
+* `g1-powerlift-v0`
+* `g1-room-v0`
+* `g1-stand-v0`
+* `g1-run-v0`
+* `g1-sit_simple-v0`
+* `g1-sit_hard-v0`
+* `g1-balance_simple-v0`
+* `g1-balance_hard-v0`
+* `g1-stair-v0`
+* `g1-slide-v0`
+* `g1-pole-v0`
+* `g1-insert_normal-v0`
+* `g1-insert_small-v0`
+
+## Training
+```
+# Define TASK
+export TASK="h1hand-sit_simple-v0"
+
+# Train TD-MPC2
+python -m tdmpc2.train disable_wandb=False wandb_entity=[WANDB_ENTITY] exp_name=tdmpc task=humanoid_${TASK} seed=0
+
+# Train DreamerV3
+python -m embodied.agents.dreamerv3.train --configs humanoid_benchmark --run.wandb True --run.wandb_entity [WANDB_ENTITY] --method dreamer --logdir logs --task humanoid_${TASK} --seed 0
+
+# Train SAC
+python ./jaxrl_m/examples/mujoco/run_mujoco_sac.py --env_name ${TASK} --wandb_entity [WANDB_ENTITY] --seed 0
+
+# Train PPO (not using MJX)
+python ./ppo/run_sb3_ppo.py --env_name ${TASK} --wandb_entity [WANDB_ENTITY] --seed 0
+```
+
+
+## Training Hierarchical Policies
+```
+# Define TASK
+export TASK="h1hand-push-v0"
+
+# Define checkpoints to pre-trained low-level policy and obs normalization
+export POLICY_PATH="data/reach_one_hand/torch_model.pt"
+export MEAN_PATH="data/reach_one_hand/mean.npy"
+export VAR_PATH="data/reach_one_hand/var.npy"
+
+# Train TD-MPC2 with pre-trained low-level policy
+python -m tdmpc2.train disable_wandb=False wandb_entity=[WANDB_ENTITY] exp_name=tdmpc task=humanoid_${TASK} seed=0 policy_path=${POLICY_PATH} mean_path=${MEAN_PATH} var_path=${VAR_PATH} policy_type="reach_single"
+
+# Train DreamerV3 with pre-trained low-level policy
+python -m embodied.agents.dreamerv3.train --configs humanoid_benchmark --run.wandb True --run.wandb_entity [WANDB_ENTITY] --method dreamer_${TASK}_hierarchical --logdir logs --env.humanoid.policy_path ${POLICY_PATH} --env.humanoid.mean_path ${MEAN_PATH} --env.humanoid.var_path ${VAR_PATH} --env.humanoid.policy_type="reach_single" --task humanoid_${TASK} --seed 0
+```
+
+## Paper Training Curves
+
+Please find [here](https://github.com/carlosferrazza/humanoid-bench/tree/main/logs) json files including all the training curves, so that comparing with our baselines will not necessarily require re-running them in the future.
+
+The json files follow this key structure: task -> method -> seed_X -> (million_steps or return). As an example to access the return sequence for one seed of the SAC run for the walk task, you can query the json data as `data['walk']['SAC']['seed_0']['return']`.
+
 
 ## Citation
-
-If you find our work useful, please consider citing our paper as follows:
-
+If you find HumanoidBench useful for your research, please cite this work:
 ```
-@inproceedings{hansen2024tdmpc2,
-  title={TD-MPC2: Scalable, Robust World Models for Continuous Control}, 
-  author={Nicklas Hansen and Hao Su and Xiaolong Wang},
-  booktitle={International Conference on Learning Representations (ICLR)},
-  year={2024}
-}
-```
-as well as the original TD-MPC paper:
-```
-@inproceedings{hansen2022tdmpc,
-  title={Temporal Difference Learning for Model Predictive Control},
-  author={Nicklas Hansen and Xiaolong Wang and Hao Su},
-  booktitle={International Conference on Machine Learning (ICML)},
-  year={2022}
+@article{sferrazza2024humanoidbench,
+    title={HumanoidBench: Simulated Humanoid Benchmark for Whole-Body Locomotion and Manipulation},
+    author={Carmelo Sferrazza and Dun-Ming Huang and Xingyu Lin and Youngwoon Lee and Pieter Abbeel},
+    journal={arXiv Preprint arxiv:2403.10506},
+    year={2024}
 }
 ```
 
-----
 
-## Contributing
-
-You are very welcome to contribute to this project. Feel free to open an issue or pull request if you have any suggestions or bug reports, but please review our [guidelines](CONTRIBUTING.md) first. Our goal is to build a codebase that can easily be extended to new environments and tasks, and we would love to hear about your experience!
-
-----
-
-## License
-
-This project is licensed under the MIT License - see the `LICENSE` file for details. Note that the repository relies on third-party code, which is subject to their respective licenses.
+## References
+This codebase contains some files adapted from other sources:
+* jaxrl_m: https://github.com/dibyaghosh/jaxrl_m/tree/main
+* DreamerV3: https://github.com/danijar/dreamerv3
+* TD-MPC2: https://github.com/nicklashansen/tdmpc2
+* purejaxrl (JAX-PPO traning): https://github.com/luchris429/purejaxrl/tree/main
+* Digit models: https://github.com/adubredu/KinodynamicFabrics.jl/tree/sim
+* Unitree H1 models: https://github.com/unitreerobotics/unitree_ros/tree/master
+* MuJoCo Menagerie (Unitree H1, Shadow Hands, Robotiq 2F-85 models): https://github.com/google-deepmind/mujoco_menagerie
+* Robosuite (some texture files): https://github.com/ARISE-Initiative/robosuite
