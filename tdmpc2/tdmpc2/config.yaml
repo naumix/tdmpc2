@@ -14,6 +14,7 @@ eval_freq: 50000
 # training
 #steps: 6000
 steps: 9000000
+#batch_size: 256
 batch_size: 1024
 reward_coef: 0.1
 value_coef: 0.1
