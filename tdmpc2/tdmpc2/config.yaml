@@ -7,11 +7,11 @@ obs: state
 
 # evaluation
 checkpoint: ???
-eval_episodes: 10
+eval_episodes: 1
 eval_freq: 50000
 
 # training
-steps: 1_000_000
+steps: 6000
 batch_size: 256
 reward_coef: 0.1
 value_coef: 0.1

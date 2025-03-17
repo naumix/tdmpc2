@@ -158,7 +158,7 @@ class Logger:
 
     def save_agent(self, agent=None, identifier="final"):
         if self._save_agent and agent:
-            fp = self._model_dir / f"{str(identifier)}.pt"
+            fp = f'{self._model_dir}/{str(identifier)}.pt'
             agent.save(fp)
             if self._wandb:
                 artifact = self._wandb.Artifact(
@@ -262,9 +262,12 @@ class Logger:
                 self._wandb.log({category + "/" + k: v}, step=d[xkey])
         if category == "eval" and self._save_csv:
             keys = ["step", "episode_reward"]
-            self._eval.append(np.array([d[keys[0]], d[keys[1]]]))
+            for idx in range(9):
+                keys.append(f"episode_reward_{idx}")
+            self._eval.append(np.array([d[keys[idx]] for idx in range(len(keys))]))
+            #self._eval.append(np.array([   d[keys[0]], d[keys[1]] ]))
             pd.DataFrame(np.array(self._eval)).to_csv(
-                self._log_dir / "eval.csv", header=keys, index=None
+                f'{self._log_dir}/eval.csv', header=keys, index=None
             )
         if category != "results":
             self._print(d, category)
