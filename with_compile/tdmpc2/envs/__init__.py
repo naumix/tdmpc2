@@ -10,7 +10,7 @@ def missing_dependencies(task):
 	raise ValueError(f'Missing dependencies for task {task}; install dependencies to use this environment.')
 
 #from tdmpc2.envs.dmcontrol import make_env as make_dm_control_env
-from tdmpc2.envs.humanoid import make_env as make_humanoid_env
+from envs.humanoid import make_env as make_humanoid_env
 #try:
 #    from tdmpc2.envs.maniskill import make_env as make_maniskill_env
 #except:

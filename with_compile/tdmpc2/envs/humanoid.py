@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import gymnasium as gym
 
-from tdmpc2.envs.wrappers.time_limit import TimeLimit
+from envs.wrappers.time_limit import TimeLimit
 
 
 
@@ -43,7 +43,7 @@ def make_env(cfg):
     import humanoid_bench
 
     env = gym.make(
-        cfg.task,
+        cfg.task, autoreset=False, max_episode_steps=1000
     )
     env = HumanoidWrapper(env, cfg)
     env.max_episode_steps = env.get_wrapper_attr("_max_episode_steps")

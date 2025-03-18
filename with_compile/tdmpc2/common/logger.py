@@ -80,7 +80,7 @@ class VideoRecorder:
 
 	def __init__(self, cfg, wandb, fps=15):
 		self.cfg = cfg
-		self._save_dir = make_dir(cfg.work_dir / 'eval_video')
+		self._save_dir = make_dir(f'{cfg.work_dir}/eval_video')
 		self._wandb = wandb
 		self.fps = fps
 		self.frames = []
@@ -138,11 +138,7 @@ class Logger:
 		)
 		print(colored("Logs will be synced with wandb.", "blue", attrs=["bold"]))
 		self._wandb = wandb
-		self._video = (
-			VideoRecorder(cfg, self._wandb)
-			if self._wandb and cfg.save_video
-			else None
-		)
+		self._video = (None)
 
 	@property
 	def video(self):

@@ -35,7 +35,7 @@ class MultitaskTrainer(Trainer):
 				while not done:
 					torch.compiler.cudagraph_mark_step_begin()
 					action = self.agent.act(obs, t0=t==0, eval_mode=True, task=task_idx)
-					obs, reward, done, info = self.env.step(action)
+					obs, reward, done, truncated, info = self.env.step(action)
 					ep_reward += reward
 					t += 1
 				ep_rewards.append(ep_reward)
@@ -106,7 +106,7 @@ class MultitaskTrainer(Trainer):
 				action = self.agent.act(obs, t0=len(self._tds)==1, task=task_idx)
 			else:
 				action = self.env.rand_act()
-			obs, reward, done, info = self.env.step(action)
+			obs, reward, done, truncated, info = self.env.step(action)
 			self._tds.append(self.to_td(obs, action, reward))
 
 			# Update agent

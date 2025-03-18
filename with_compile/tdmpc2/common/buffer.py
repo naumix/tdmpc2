@@ -85,8 +85,8 @@ class Buffer():
 		"""Add an episode to the buffer."""
 		td['episode'] = torch.full_like(td['reward'], self._num_eps, dtype=torch.int64)
         # FIX for HumanoidBench #
-        if len(td["episode"]) <= self.cfg.horizon + 1:
-            return self._num_eps
+		if len(td["episode"]) <= self.cfg.horizon + 1:
+			return self._num_eps
         ################################
 		if self._num_eps == 0:
 			self._buffer = self._init(td)
