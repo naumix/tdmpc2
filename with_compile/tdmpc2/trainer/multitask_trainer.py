@@ -25,6 +25,7 @@ class MultitaskTrainer(Trainer):
 
 	def eval(self):
 		"""Evaluate a TD-MPC2 agent."""
+		print('running evaluations...')
 		task_idx = torch.zeros(1, dtype=torch.int32)[0] - 1
 		task_rewards, task_successes = [], []
 		for task in range(len(self.env.envs)):
@@ -48,6 +49,7 @@ class MultitaskTrainer(Trainer):
 			results_eval[f'episode_success_{idx}'] = task_successes[idx]
 		results_eval['episode_reward'] = np.nanmean(task_rewards)
 		results_eval['episode_success'] = np.nanmean(task_successes)
+		print('finished evaluations...')
 		return results_eval
 
 	def to_td(self, obs, action=None, reward=None, task=None):
@@ -123,6 +125,7 @@ class MultitaskTrainer(Trainer):
 						for _ in range(num_updates):
 							_train_metrics = self.agent.update(self.buffer)
 						train_metrics.update(_train_metrics)
+
 
 			self._step += 1
 
