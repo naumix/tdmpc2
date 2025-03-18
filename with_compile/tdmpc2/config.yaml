@@ -2,7 +2,7 @@ defaults:
     - override hydra/launcher: submitit_local
 
 # environment
-task: humanoid9
+task: dog-run
 obs: state
 
 # evaluation
@@ -11,7 +11,7 @@ eval_episodes: 10
 eval_freq: 50000
 
 # training
-steps: 1_000_000
+steps: 10_000_000
 batch_size: 256
 reward_coef: 0.1
 value_coef: 0.1
@@ -50,7 +50,7 @@ vmin: -10
 vmax: +10
 
 # architecture
-model_size: 1
+model_size: ???
 num_enc_layers: 2
 enc_dim: 256
 num_channels: 32
@@ -62,8 +62,8 @@ dropout: 0.01
 simnorm_dim: 8
 
 # logging
-wandb_project: tdmpc2
-wandb_entity: naumix
+wandb_project: ???
+wandb_entity: ???
 wandb_silent: false
 enable_wandb: true
 save_csv: true
@@ -74,7 +74,7 @@ save_agent: true
 seed: 1
 
 # convenience
-work_dir: ./
+work_dir: ???
 task_title: ???
 multitask: ???
 tasks: ???

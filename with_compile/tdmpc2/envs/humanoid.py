@@ -4,7 +4,8 @@ import sys
 import numpy as np
 import gymnasium as gym
 
-from envs.wrappers.time_limit import TimeLimit
+from tdmpc2.envs.wrappers.time_limit import TimeLimit
+
 
 
 class HumanoidWrapper(gym.Wrapper):
@@ -47,5 +48,3 @@ def make_env(cfg):
     env = HumanoidWrapper(env, cfg)
     env.max_episode_steps = env.get_wrapper_attr("_max_episode_steps")
     return env
-
-

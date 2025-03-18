@@ -15,31 +15,12 @@ from common.seed import set_seed
 from common.buffer import Buffer
 from envs import make_env
 from tdmpc2 import TDMPC2
+from trainer.multitask_trainer import MultitaskTrainer
 from trainer.online_trainer import OnlineTrainer
 from common.logger import Logger
 
-
-
-import omegaconf
-cfg = omegaconf.OmegaConf.load('/Users/mnauman/Documents/GitHub/tdmpc2/tdmpc2/config.yaml')
-cfg = parse_cfg(cfg)
-
-
-env = make_env(cfg)
-
-obs = env.reset()
-
-action = env.action_space.sample()
-env.step
-
-
-
-
-
-
 torch.backends.cudnn.benchmark = True
 torch.set_float32_matmul_precision('high')
-
 
 
 @hydra.main(config_name='config', config_path='.')
@@ -68,7 +49,7 @@ def train(cfg: dict):
 	set_seed(cfg.seed)
 	print(colored('Work dir:', 'yellow', attrs=['bold']), cfg.work_dir)
 
-	trainer_cls = OnlineTrainer
+	trainer_cls = MultitaskTrainer if cfg.multitask else OnlineTrainer
 	trainer = trainer_cls(
 		cfg=cfg,
 		env=make_env(cfg),

@@ -21,6 +21,49 @@ trainer = trainer_cls(
     buffer=Buffer(cfg),
     logger=Logger(cfg),
 )
-trainer.train()
+#trainer.train()
 
+
+train_metrics, done, eval_next = {}, True, True
+task_idx = torch.zeros(1, dtype=torch.int32)[0] + len(trainer.env.envs)
+while trainer._step <= trainer.cfg.steps:
+    # Evaluate agent periodically
+    if trainer._step % trainer.cfg.eval_freq == 0:
+        eval_next = True
+
+    # Reset environment
+    if done:
+        if trainer._step > 0:
+            trainer._ep_idx = trainer.buffer.add(torch.cat(trainer._tds))
+        task_idx += 1
+        if task_idx >= len(trainer.env.envs):
+            task_idx = torch.zeros(1, dtype=torch.int32)[0]
+        obs = trainer.env.reset(task_idx=task_idx.item())[0]
+        trainer._tds = [trainer.to_td(obs=obs, task=task_idx)]
+        _ = trainer.agent.act(obs, t0=len(trainer._tds) == 1, task=task_idx)
+
+    # Collect experience
+    if trainer._step > trainer.cfg.seed_steps:
+        action = trainer.agent.act(obs, t0=len(trainer._tds) == 1, task=task_idx)
+    else:
+        action = trainer.env.rand_act()
+    obs, reward, done, truncated, info = trainer.env.step(action)
+    done = done or truncated
+    trainer._tds.append(trainer.to_td(obs=obs, action=action, reward=reward, task=task_idx))
+    trainer._step += 1
+    
+    # Update agent
+    if trainer._step >= trainer.cfg.seed_steps:
+        if trainer._step == trainer.cfg.seed_steps:
+            num_updates = 500
+            print("Pretraining agent on seed data...")
+            for _ in range(num_updates):
+                _train_metrics = trainer.agent.update(trainer.buffer)
+            train_metrics.update(_train_metrics)
+        else:
+            num_updates = 1
+            if trainer._step % 9 == 0:                        
+                for _ in range(num_updates):
+                    _train_metrics = trainer.agent.update(trainer.buffer)
+                train_metrics.update(_train_metrics)
 

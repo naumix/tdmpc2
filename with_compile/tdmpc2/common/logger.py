@@ -108,7 +108,7 @@ class Logger:
 
 	def __init__(self, cfg):
 		self._log_dir = make_dir(cfg.work_dir)
-		self._model_dir = make_dir(self._log_dir / "models")
+		self._model_dir = make_dir(f'{self._log_dir}/models')
 		self._save_csv = cfg.save_csv
 		self._save_agent = cfg.save_agent
 		self._group = cfg_to_group(cfg)
@@ -130,7 +130,7 @@ class Logger:
 		wandb.init(
 			project=self.project,
 			entity=self.entity,
-			name=str(cfg.seed),
+			name=f"{cfg.task}.tdmpc.{cfg.exp_name}.{cfg.seed}.{cfg.model_size}",
 			group=self._group,
 			tags=cfg_to_group(cfg, return_list=True) + [f"seed:{cfg.seed}"],
 			dir=self._log_dir,
@@ -154,7 +154,7 @@ class Logger:
 
 	def save_agent(self, agent=None, identifier='final'):
 		if self._save_agent and agent:
-			fp = self._model_dir / f'{str(identifier)}.pt'
+			fp = f'{self._model_dir}/{str(identifier)}.pt'
 			agent.save(fp)
 			if self._wandb:
 				artifact = self._wandb.Artifact(
@@ -234,8 +234,10 @@ class Logger:
 			self._wandb.log(_d, step=d[xkey])
 		if category == "eval" and self._save_csv:
 			keys = ["step", "episode_reward"]
-			self._eval.append(np.array([d[keys[0]], d[keys[1]]]))
+			for idx in range(9):
+				keys.append(f"episode_reward_{idx}")
+			self._eval.append(np.array([d[keys[idx]] for idx in range(len(keys))]))
 			pd.DataFrame(np.array(self._eval)).to_csv(
-				self._log_dir / "eval.csv", header=keys, index=None
+				f'{self._log_dir}/eval.csv', header=keys, index=None
 			)
 		self._print(d, category)

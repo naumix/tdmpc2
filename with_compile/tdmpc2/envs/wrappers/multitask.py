@@ -54,7 +54,5 @@ class MultitaskWrapper(gym.Wrapper):
 		return self._pad_obs(obs)
 
 	def step(self, action):
-		obs, reward, done, info = self.env.step(action[:self.env.action_space.shape[0]])
-		return self._pad_obs(obs), reward, done, info
-
-
+		obs, reward, done, truncated, info = self.env.step(action[: self.env.action_space.shape[0]])
+		return self._pad_obs(obs), reward, done, truncated, info
