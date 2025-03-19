@@ -115,3 +115,31 @@ class Buffer:
         """Sample a batch of subsequences from the buffer."""
         td = self._buffer.sample().view(-1, self.cfg.horizon + 1).permute(1, 0)
         return self._prepare_batch(td)
+    
+    def save_buffer(self, path):
+        self._buffer.dumps(path)
+        with open(f"{path}/num_eps", "w") as file:
+            file.write(f'{self._num_eps}, {self._capacity}, {self._batch_size}')
+        file.close()
+            
+    def load_buffer(self, path, cfg):
+        with open(f"{path}/num_eps", "r") as file:
+            init_values = file.read()
+        self._num_eps = int(init_values.split(',')[0])
+        self._capacity = int(init_values.split(',')[1])
+        self._batch_size = int(init_values.split(',')[2])
+        _storage = LazyTensorStorage(self._capacity, device=torch.device('cpu'))
+        _sampler = SliceSampler(
+            num_slices=cfg.batch_size,
+            end_key=None,
+            traj_key="episode",
+            truncated_key=None,
+        )
+        self._buffer = ReplayBuffer(
+            storage=_storage,
+            sampler=_sampler,
+            #pin_memory=True,
+            prefetch=0,
+            batch_size=self._batch_size,
+        )
+        file.close()

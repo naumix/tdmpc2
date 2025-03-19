@@ -25,7 +25,7 @@ class MultitaskTrainer(Trainer):
 
 	def eval(self):
 		"""Evaluate a TD-MPC2 agent."""
-		print('running evaluations...')
+		#print('running evaluations...')
 		task_idx = torch.zeros(1, dtype=torch.int32)[0] - 1
 		task_rewards, task_successes = [], []
 		for task in range(len(self.env.envs)):
@@ -37,6 +37,7 @@ class MultitaskTrainer(Trainer):
 					torch.compiler.cudagraph_mark_step_begin()
 					action = self.agent.act(obs, t0=t==0, eval_mode=True, task=task_idx)
 					obs, reward, done, truncated, info = self.env.step(action)
+					done = done or truncated
 					ep_reward += reward
 					t += 1
 				ep_rewards.append(ep_reward)
@@ -49,7 +50,7 @@ class MultitaskTrainer(Trainer):
 			results_eval[f'episode_success_{idx}'] = task_successes[idx]
 		results_eval['episode_reward'] = np.nanmean(task_rewards)
 		results_eval['episode_success'] = np.nanmean(task_successes)
-		print('finished evaluations...')
+		#print('finished evaluations...')
 		return results_eval
 
 	def to_td(self, obs, action=None, reward=None, task=None):
@@ -109,7 +110,8 @@ class MultitaskTrainer(Trainer):
 			else:
 				action = self.env.rand_act()
 			obs, reward, done, truncated, info = self.env.step(action)
-			self._tds.append(self.to_td(obs, action, reward))
+			done = done or truncated
+			self._tds.append(self.to_td(obs=obs, action=action, reward=reward, task=task_idx))
 
 			# Update agent
 			if self._step >= self.cfg.seed_steps:

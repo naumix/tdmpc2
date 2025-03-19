@@ -26,6 +26,8 @@ trainer = trainer_cls(
 
 train_metrics, done, eval_next = {}, True, True
 task_idx = torch.zeros(1, dtype=torch.int32)[0] + len(trainer.env.envs)
+
+
 while trainer._step <= trainer.cfg.steps:
     # Evaluate agent periodically
     if trainer._step % trainer.cfg.eval_freq == 0:
@@ -67,3 +69,36 @@ while trainer._step <= trainer.cfg.steps:
                     _train_metrics = trainer.agent.update(trainer.buffer)
                 train_metrics.update(_train_metrics)
 
+
+
+
+
+
+
+from torchrl.data.replay_buffers import ReplayBuffer, LazyTensorStorage
+from torchrl.data.replay_buffers.samplers import SliceSampler
+
+trainer.buffer.save_buffer('test')
+trainer.buffer.load_buffer('test', cfg)
+
+
+with open(f"test/num_eps", "r") as file:
+    init_values = file.read()
+
+
+_storage = LazyTensorStorage(trainer.buffer._capacity, device=torch.device('cpu'))
+_sampler = SliceSampler(num_slices=trainer.cfg.batch_size, end_key=None, traj_key="episode", truncated_key=None)
+trainer.buffer._buffer = ReplayBuffer(
+    storage=storage,
+    sampler=_sampler,
+    #pin_memory=True,
+    prefetch=0,
+    batch_size=trainer.buffer._batch_size,
+)
+
+trainer.buffer._buffer.loads("test.txt")
+
+len(trainer.buffer._buffer)
+trainer.buffer.num_eps
+
+obs, action, reward, task = trainer.buffer.sample()

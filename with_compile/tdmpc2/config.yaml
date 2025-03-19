@@ -8,7 +8,7 @@ obs: state
 # evaluation
 checkpoint: ???
 eval_episodes: 5
-eval_freq: 50000
+eval_freq: 225000
 
 # training
 steps: 9_000_000
@@ -24,7 +24,7 @@ tau: 0.01
 discount_denom: 5
 discount_min: 0.95
 discount_max: 0.995
-buffer_size: 1_000_000
+buffer_size: 9_000_000
 exp_name: default
 data_dir: ???
 
@@ -88,4 +88,4 @@ seed_steps: ???
 bin_size: ???
 
 # speedups
-compile: False
+compile: true
