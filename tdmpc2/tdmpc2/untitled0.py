@@ -74,6 +74,8 @@ while trainer._step <= trainer.cfg.steps:
 
 '''
 
+trainer.agent.save('model')
+trainer.agent.load('model')
 
 from torchrl.data.replay_buffers import ReplayBuffer, LazyTensorStorage
 from torchrl.data.replay_buffers.samplers import SliceSampler

@@ -12,7 +12,7 @@ eval_freq: 225000
 
 # training
 steps: 9_000_000
-batch_size: 256
+batch_size: 1024
 reward_coef: 0.1
 value_coef: 0.1
 consistency_coef: 20
@@ -50,7 +50,7 @@ vmin: -10
 vmax: +10
 
 # architecture
-model_size: 5
+model_size: 19
 num_enc_layers: 2
 enc_dim: 256
 num_channels: 32
@@ -67,6 +67,7 @@ wandb_entity: naumix
 wandb_silent: false
 enable_wandb: true
 save_csv: true
+save_frequency: 30000
 
 # misc
 save_video: true

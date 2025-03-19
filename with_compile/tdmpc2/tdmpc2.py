@@ -74,23 +74,17 @@ class TDMPC2(torch.nn.Module):
 		Args:
 			fp (str): Filepath to save state dict to.
 		"""
-		torch.save({"model": self.model.state_dict()}, fp)
+		torch.save({
+            "model": self.model.state_dict(), 
+            "optimizer": self.optim.state_dict(), 
+            "optimizer_pi": self.pi_optim.state_dict()
+            }, fp)
 
 	def load(self, fp):
-		"""
-		Load a saved state dict from filepath (or dictionary) into current agent.
-
-		Args:
-			fp (str or dict): Filepath or state dict to load.
-		"""
-		if isinstance(fp, dict):
-			state_dict = fp
-		else:
-			state_dict = torch.load(fp, map_location=torch.get_default_device(), weights_only=False)
-		state_dict = state_dict["model"] if "model" in state_dict else state_dict
-		state_dict = api_model_conversion(self.model.state_dict(), state_dict)
-		self.model.load_state_dict(state_dict)
-		return
+		checkpoint = torch.load(fp)
+		self.model.load_state_dict(checkpoint['model'])
+		self.optim.load_state_dict(checkpoint['optimizer'])
+		self.pi_optim.load_state_dict(checkpoint['optimizer_pi'])
 
 	@torch.no_grad()
 	def act(self, obs, t0=False, eval_mode=False, task=None):

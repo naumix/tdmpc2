@@ -150,8 +150,9 @@ class Logger:
 
 	def save_agent(self, agent=None, identifier='final'):
 		if self._save_agent and agent:
-			fp = f'{self._model_dir}/{str(identifier)}.pt'
-			agent.save(fp)
+			#fp = f'{self._model_dir}/{str(identifier)}.pt'
+			#agent.save(fp)
+			pass
 
 	def finish(self, agent=None):
 		try:

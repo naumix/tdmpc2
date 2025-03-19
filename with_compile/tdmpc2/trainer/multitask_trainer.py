@@ -6,6 +6,13 @@ from tensordict.tensordict import TensorDict
 from trainer.base import Trainer
 
 
+def checkpoint_all(i, agent, buffer, path):
+    buffer.save_buffer(path)
+    agent.save(f'{path}/model')
+    with open(f"{path}/{i}", "w") as file:
+        file.write(f"{i}")
+    file.close()
+    
 class MultitaskTrainer(Trainer):
 	"""Trainer class for single-task online TD-MPC2 training."""
 
@@ -128,7 +135,10 @@ class MultitaskTrainer(Trainer):
 							_train_metrics = self.agent.update(self.buffer)
 						train_metrics.update(_train_metrics)
 
-
+			if self._step % self.cfg.save_frequency == 0 and self._step > 10000:
+				path = f'savedata_{self.cfg.seed}'
+				checkpoint_all(self._step, self.agent, self.buffer, path)
+                
 			self._step += 1
 
 		self.logger.finish(self.agent)
